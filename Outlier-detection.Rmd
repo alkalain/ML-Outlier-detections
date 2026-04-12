@@ -1,0 +1,118 @@
+---
+title: ""
+author: ""
+date: ""
+jury1: "M. Jonathan El Methni"
+parcours: "Master Mathematique Informatique Appliqué aux Sciences Humaines et Sociales parcours Informatique et Cognition "
+maintitle: "Outlier Detection on Witfoo Cybersecurity Dataset"
+mainauthor1: "Aylin Guventurk"
+mainauthor2: "Alain Karapetian"
+mainauthor3: "Rachel Peretti"
+maindate: "Année Universitaire 2025-2026"
+output:
+  bookdown::pdf_document2:
+    fig_caption: true
+    number_sections: true
+    toc: false
+    lof: false
+    lot: false
+    latex_engine: xelatex
+    keep_tex: false
+
+header-includes:
+  - \usepackage{fancyhdr}
+  - \usepackage{graphicx}
+  - \usepackage{amsmath}
+  - \usepackage{geometry}
+  - \geometry{margin=2.5cm}
+  - \setcounter{secnumdepth}{3}
+
+  # fonts
+  - \usepackage{fontspec}
+  - \setmainfont{Atkinson Hyperlegible}
+  - \setsansfont{Atkinson Hyperlegible}
+  - \setmonofont{Atkinson Hyperlegible}
+
+  # Tableaux
+  - \usepackage{float}
+---
+```{r custom_setup, echo=FALSE, results='asis'}
+yaml_data <- rmarkdown::yaml_front_matter(knitr::current_input())
+cat(paste0(
+  "\\newcommand{\\theTitle}{", yaml_data$maintitle, "}\n",
+  "\\newcommand{\\theAuthorA}{", yaml_data$mainauthor1, "}\n",
+  "\\newcommand{\\theAuthorB}{", yaml_data$mainauthor2, "}\n",
+  "\\newcommand{\\theAuthorC}{", yaml_data$mainauthor3, "}\n",
+  "\\newcommand{\\theDate}{", yaml_data$maindate, "}\n",
+  "\\newcommand{\\theJuryA}{", yaml_data$jury1, "}\n",
+  "\\newcommand{\\theParcours}{", yaml_data$parcours, "}\n"
+))
+```
+```{=latex}
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{center}
+    \vspace*{1cm}
+    \includegraphics[width=0.3\textwidth]{logo_uga.png}\\[1cm]
+
+    \Large \textbf{\theParcours}\\[1cm]
+
+    \Large \textbf{\theDate}\\[1cm]
+
+    {\Huge \bfseries \theTitle\par}
+    \vspace{2cm}
+
+    \Large \textbf{Auteurs :}\\[0.5em]
+    \theAuthorA\\[0.3em]
+    \theAuthorB\\[0.3em]
+    \theAuthorC
+
+    \Large \textbf{Jury :}\\[0.5em]
+    \theJuryA\\[0.3em]
+
+\end{center}
+\end{titlepage}
+
+\clearpage
+\thispagestyle{empty}
+\tableofcontents
+\clearpage
+
+\thispagestyle{empty}
+\listoffigures
+\clearpage
+
+\setcounter{page}{1}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\theAuthorA{} \& \theAuthorB \& \theAuthorC}
+\fancyhead[R]{\theDate}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+```
+
+# Présentation du dataset
+
+```{r chargement-donnee, echo=FALSE, results='asis'}
+
+
+
+```
+
+## Description
+
+## Statistiques Descriptives
+
+# Détections d'anomalies
+
+## Local Outlier Factor
+
+## Isolation Forest
+
+## One-Class SVM
+
+# Comparaison avec One-Class SVM
+
+# Conclusion
+
+# Annexe : avec tout le code
