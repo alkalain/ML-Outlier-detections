@@ -152,6 +152,8 @@ Pour avoir au moins 80% de la variance expliqué, il faut prendre les septs prem
 
 ## Local Outlier Factor
 
+Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observations, calcule la densité, et la compare à celles des autres points.
+
 ```{r LOF}
 X7 <- pcaOutliers$x[, 1:7]  # LOF calculé sur 7 dimensions
 X2 <- pcaOutliers$x[, 1:2]  # Visualisation sur PC1 vs PC2
@@ -232,6 +234,8 @@ par(mfrow = c(1, 1))
 
 
 ## Isolation Forest
+
+La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpage des données jusqu'à trouver des points les plus éloignés, de la racine de l'arbre, qui sont les outliers.
 
 ```{r Iso-Forest}
 # vecteur d'hyperparamètre les k arbres
