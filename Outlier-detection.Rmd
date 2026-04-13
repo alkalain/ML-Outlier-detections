@@ -119,7 +119,7 @@ Le jeu de données outlier-dataset.Rdata mettra en jeu n = 6916 observations viv
 ## ACP
 
 ```{r acp}
-pcaOutliers <- prcomp(X)
+pcaOutliers <- prcomp(X,scale. = TRUE)
 
 varCumSum <- cumsum(pcaOutliers$sdev^2/sum(pcaOutliers$sdev^2)*100)
 
