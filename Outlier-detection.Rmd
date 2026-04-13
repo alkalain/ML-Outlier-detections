@@ -145,7 +145,7 @@ plot(pcaOutliers$x[,1:15])
 
 ```
 
-Pour avoir au moins 80% de la variance expliqué, il faut prendre les septs premierses composantes principales. Cela résulte à `r round(varCumSum[7],4)`% de variance.
+Pour avoir au moins 80% de la variance expliqué, il faut prendre les septs premierses composantes principales. Cela résulte à `r round(varCumSum[15],4)`% de variance.
 
 # Détections d'anomalies
 
@@ -358,6 +358,10 @@ legend("bottomright",
        bty = "n")
 ```
 
+Même si les les models à 100, 500, 1000 sont plus optimaux leurs AUC reste iférieur à 0.7. Cela veux dire que les modèle ne sont pas satisfaisant pour ces données seule 60% des classifications sont correctement classifés.
+- snesibilité
+- spécificité
+
 ## One-Class SVM
 
 ```{r OC-SVM}
@@ -456,9 +460,27 @@ legend("bottomright",
        bty = "n")
 
 ```
+Même si les models à nu=0.1 et nu=0.25 sont les plus optimaux leurs AUC reste iférieur à 0.7. Cela veux dire que les modèle ne sont pas satisfaisant pour ces données seule respéctivement 60% et 63% des classifications sont correctement classifés.
+- snesibilité
+- spécificité
 
 # Comparaison avec One-Class SVM
 
+*OC-SVM VS Isolation Forest*
+Les performance du One-Class SVM et Isolation forest sont assez semblable.
+- AUC proche environ 0.6
+- snesibilité
+- spécificité
+
+*OC-SVM VS LOF*
+Les performance de LOF sont nettement supérieur au One-Classe SVM.
+- AUC OC-SVM (0.6) < LOF (0.8)
+- snesibilité
+- spécificité
+
 # Conclusion
+
+En conclusion, même si les trois methode de sont variées et proposent un resultat qui peut sembler viable au regard des historames de distribution, les courbe ROC permette de bien départager ces modles parmis leurs variante de configuration d'hyperparamètre et entre models.
+
 
 # Annexe : avec tout le code
