@@ -94,7 +94,7 @@ cat(paste0(
 
 # Présentation du dataset
 
-```{r chargement-donnee, echo=FALSE, results='asis'}
+```{r chargement-donnee, echo=FALSE, message=TRUE, warning=TRUE, results='hide'}
 if(!require('pROC')) install.packages('pROC')
 if(!require("dbscan")) install.packages("dbscan")
 if(!require('isotree')) install.packages('isotree')
@@ -109,16 +109,11 @@ load("./outlier-dataset.Rdata")
 
 ## Description
 
-```{r resume}
-lignes <- nrow(X)
-colonnes <- ncol(X)
-```
-
 Le jeu de données outlier-dataset.Rdata mettra en jeu n = 6916 observations vivant dans un espace de p = 21 dimensions, au sein desquelles 250 sont atypiques. Il prendra la forme d’une matrice X de dimension 6916 × 21 et d’un vecteur y indiquant si chacune de ces observations est atypique ou non (catégories "normal" et "outlier").
 
 ## ACP
 
-```{r acp}
+```{r acp, echo=FALSE, results='asis'}
 pcaOutliers <- prcomp(X,scale. = TRUE)
 
 varCumSum <- cumsum(pcaOutliers$sdev^2/sum(pcaOutliers$sdev^2)*100)
@@ -364,7 +359,7 @@ Même si les les models à 100, 500, 1000 sont plus optimaux leurs AUC reste if�
 
 ## One-Class SVM
 
-```{r OC-SVM}
+```{r OC-SVM, echo=FALSE, results='asis'}
 # vecteur d'hyperparamètre les nu
 nus <- c(0.01, 0.05, 0.1, 0.25)
 
@@ -414,7 +409,7 @@ for(nu in nus) {
 
 ### Courbe ROC
 
-```{r OC-SVM-ROC}
+```{r OC-SVM-ROC, echo=FALSE, results='asis'}
 # 1. Préparation
 couleurs_svm <- c("firebrick", "dodgerblue3", "darkorchid4", "goldenrod3")
 legende_svm <- c()
