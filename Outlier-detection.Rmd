@@ -140,7 +140,7 @@ plot(pcaOutliers$x[,1:15])
 
 ```
 
-Pour avoir au moins 80% de la variance expliqué, il faut prendre les septs premierses composantes principales. Cela résulte à `r round(varCumSum[15],4)`% de variance.
+Pour avoir au moins 80% de la variance expliqué, il faut prendre les septs premierses composantes principales. Cela résulte à `r round(varCumSum[15],2)`% de variance.
 
 # Détections d'anomalies
 
