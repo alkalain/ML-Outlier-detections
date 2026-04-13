@@ -141,7 +141,7 @@ barplot(varCumSum,
         las = 2
         )
 
-plot(pcaOutliers$x[,1:7])
+plot(pcaOutliers$x[,1:15])
 
 ```
 
@@ -154,8 +154,8 @@ Pour avoir au moins 80% de la variance expliqué, il faut prendre les septs prem
 
 Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observations, calcule la densité, et la compare à celles des autres points.
 
-```{r LOF}
-X7 <- pcaOutliers$x[, 1:7]  # LOF calculé sur 7 dimensions
+```{r LOF, echo=FALSE, results='asis'}
+X15 <- pcaOutliers$x[, 1:15]  # LOF calculé sur 15 dimensions
 X2 <- pcaOutliers$x[, 1:2]  # Visualisation sur PC1 vs PC2
 
 # vecteur d'hyperparamètre les k voisins
@@ -166,7 +166,7 @@ seuils <- c(1.2, 1.5, 1.75, 2, 3)
 colsSeuils <- c('red2', 'orange2', 'pink1', 'green2', 'cyan2')
 
 for(k in ks) {
-  lof_scores <- lof(X7, minPts = k)
+  lof_scores <- lof(X15, minPts = k)
 
   par(mfrow = c(1, 2))
 
@@ -246,8 +246,8 @@ seuils_iso <- c(0.5, 0.55, 0.6, 0.65, 0.7)
 colsSeuils <- c('red2', 'orange2', 'pink1', 'green2', 'cyan2')
 
 for(k in ks) {
-  iso_model <- isolation.forest(X7, ntrees = k)
-  iso_scores <- predict(iso_model, X7)
+  iso_model <- isolation.forest(X15, ntrees = k)
+  iso_scores <- predict(iso_model, X15)
 
   par(mfrow = c(1, 2))
 
@@ -321,13 +321,13 @@ nus <- c(0.01, 0.05, 0.1, 0.25)
 for(nu in nus) {
 
   # Fit modèle sur 7 dimensions
-  svm_model <- svm(X7, type = 'one-classification', nu = nu, kernel = "radial")
+  svm_model <- svm(X15, type = 'one-classification', nu = nu, kernel = "radial")
 
   # Prédictions
-  y_pred <- predict(svm_model, X7)
+  y_pred <- predict(svm_model, X15)
 
   # Scores de décision
-  svm_scores <- attributes(predict(svm_model, X7, decision.values = TRUE))$decision.values
+  svm_scores <- attributes(predict(svm_model, X15, decision.values = TRUE))$decision.values
 
   # Normaliser et inverser
   svm_scores_norm <- (svm_scores - min(svm_scores)) / (max(svm_scores) - min(svm_scores))
