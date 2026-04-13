@@ -187,7 +187,7 @@ for(k in ks) {
     points(X2[outliers, ], col = colsSeuils[i], pch = 16, cex = 1)
   }
 
-  legend("topright",
+  legend("topleft",
          legend = paste("Seuil >", seuils),
          col = colsSeuils,
          pch = 16,
@@ -204,46 +204,70 @@ for(k in ks) {
 }
 ```
 
+La visualisation est basée sur les deux premières composantes principales PC1 et PC2, et les scores LOF ont été calculés sur un espace à 15 dimensions. Sur le premier graphique, il y a des points situés au coeur du nuage identifiés comme des outliers, et des points isolés autours sont classés comme standart (en noir). Cela veut dire qu'un point peut sembler normale sur PC1 et PC2, mais présenter un caractère atypique dans le reste des dimensions.
+
 ### Courbe ROC
 
-```{r }
-par(mfrow = c(2, 3))
+```{r ROC-LOF, echo=FALSE, results='asis'}
+couleurs <- rainbow(length(ks))
 
-for(k in ks) {
-  lof_scores <- lof(X7, minPts = k)
+first <- TRUE
 
-  # Filtrer les valeurs infinies
+legende_txt <- c()
+
+for(i in 1:length(ks)) {
+  k <- ks[i]
+  
+  # Calcul du LOF
+  lof_scores <- lof(X15, minPts = k)
+  
+  # Nettoyage des données
   idx_finite <- is.finite(lof_scores)
-  lof_finite <- lof_scores[idx_finite]
-  y_finite <- y[idx_finite]
+  roc_obj <- roc(y[idx_finite], lof_scores[idx_finite], quiet = TRUE)
+  auc_val <- round(auc(roc_obj), 3)
+  
+  # Ajout au graphique
+  plot(roc_obj,
+       add = !first,
+       col = couleurs[i],
+       lwd = 2,
+       legacy.axes = TRUE,
+       main = "Comparaison des courbes ROC - LOF")
 
-  roc_lof <- roc(y_finite, lof_finite)
-
-  plot(roc_lof,
-       main = paste("ROC - LOF minPts =", k,
-                    "\nAUC =", round(auc(roc_lof), 3)),
-       col = "steelblue",
-       lwd = 2)
-
-  abline(a = 0, b = 1, lty = 2, col = "grey")
+  # Construction du texte de légende
+  legende_txt[i] <- paste0("minPts = ", k, " (AUC = ", auc_val, ")")
+  
+  first <- FALSE
 }
 
-par(mfrow = c(1, 1))
+# 3. Ajout de la diagonale de référence (modèle aléatoire)
+abline(a = 0, b = 1, lty = 2, col = "grey60")
+
+# 4. Ajout de la légende
+legend("bottomright",
+       legend = legende_txt,
+       col = couleurs,
+       lwd = 2,
+       cex = 0.8,
+       bty = "n") # "n" pour enlever le cadre de la légende
 
 ```
+Les courbes ROC vertes, bleu et violet sont optimaux à differents niveaux. La courbe rouge n'est optimale nullpart. Les trois courbes optimaux ont un AUC supérieur à 0.7. En arrondissant au centième près la meilleur courbe reste minPts = 20 avec un AUC=0.80, ce qui veut dire que si un outiler est bien classé comme tel, alors il y 80% des cas cette classification est correcte. Ce le model LOF avec 20 voisins est très bon pour classifer les outliers.
 
+- snesibilité
+- spécificité
 
 ## Isolation Forest
 
 La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpage des données jusqu'à trouver des points les plus éloignés, de la racine de l'arbre, qui sont les outliers.
 
-```{r Iso-Forest}
+```{r Iso-Forest, echo=FALSE, results='asis'}
 # vecteur d'hyperparamètre les k arbres
 ks <- c(50, 100, 500, 1000)
 # seuils de catégorrisaition des outilers
 seuils_iso <- c(0.5, 0.55, 0.6)
 # pour l'affichage de l'histograme pour visualiser les seuils d'outliers
-colsSeuils <- c('red2', 'orange2', 'pink1', 'green2', 'cyan2')
+colsSeuils <- c('red2', 'orange2', 'cyan2')
 
 for(k in ks) {
   iso_model <- isolation.forest(X15, ntrees = k)
@@ -267,7 +291,7 @@ for(k in ks) {
     points(X2[outliers, ], col = colsSeuils[i], pch = 16, cex = 1)
   }
 
-  legend("topright",
+  legend("topleft",
          legend = c("Normal", paste("Seuil >", seuils_iso)),
          col = c("black", colsSeuils),
          pch = 16, cex = 0.7,
@@ -291,25 +315,47 @@ for(k in ks) {
 
 ### Courbe ROC
 
-```{r }
-par(mfrow = c(2, 2))
+```{r ROC-Isolation-Forest, echo=FALSE, results='asis'}
+# 1. Préparation des couleurs et variables
+couleurs_iso <- c("darkorange", "purple", "forestgreen", "red") # Couleurs distinctes
+legende_iso <- c()
+first_iso <- TRUE
 
-for(k in ks) {
-  iso_model <- isolation.forest(X7, ntrees = k)
-  iso_scores <- predict(iso_model, X7)
+# 2. Boucle de génération
+for(i in 1:length(ks)) {
+  k <- ks[i]
 
-  roc_iso <- roc(y, iso_scores)
+  # Entraînement et prédiction
+  iso_model <- isolation.forest(X15, ntrees = k)
+  iso_scores <- predict(iso_model, X15)
 
-  plot(roc_iso,
-       main = paste("ROC - Isolation Forest ntrees =", k,
-                    "\nAUC =", round(auc(roc_iso), 3)),
-       col = "steelblue",
-       lwd = 2)
+  # Calcul ROC
+  roc_obj <- roc(y, iso_scores, quiet = TRUE)
+  auc_val <- round(auc(roc_obj), 3)
 
-  abline(a = 0, b = 1, lty = 2, col = "grey")
+  # Tracé
+  plot(roc_obj,
+       add = !first_iso,
+       col = couleurs_iso[i],
+       lwd = 2,
+       legacy.axes = TRUE,
+       main = "Comparaison ROC - Isolation Forest (sur X15)")
+
+  # Stockage pour la légende
+  legende_iso[i] <- paste0("ntrees = ", k, " (AUC = ", auc_val, ")")
+
+  first_iso <- FALSE
 }
 
-par(mfrow = c(1, 1))
+# 3. Éléments graphiques complémentaires
+abline(a = 0, b = 1, lty = 2, col = "grey")
+
+legend("bottomright",
+       legend = legende_iso,
+       col = couleurs_iso,
+       lwd = 2,
+       cex = 0.8,
+       bty = "n")
 ```
 
 ## One-Class SVM
@@ -340,7 +386,7 @@ for(nu in nus) {
        main = paste("One-Class SVM nu =", nu),
        xlab = "PC1", ylab = "PC2")
 
-  legend("topright",
+  legend("topleft",
          legend = c("Normal", "Outlier"),
          col = c("grey", "red2"),
          pch = 16, cex = 0.7)
@@ -365,27 +411,49 @@ for(nu in nus) {
 ### Courbe ROC
 
 ```{r OC-SVM-ROC}
-par(mfrow = c(2, 2))
+# 1. Préparation
+couleurs_svm <- c("firebrick", "dodgerblue3", "darkorchid4", "goldenrod3")
+legende_svm <- c()
+first_svm <- TRUE
 
-for(nu in nus) {
-  svm_model <- svm(X7, type = 'one-classification', nu = nu, kernel = "radial")
+# 2. Boucle de génération
+for(i in 1:length(nus)) {
+  nu <- nus[i]
 
-  svm_scores <- attributes(predict(svm_model, X7, decision.values = TRUE))$decision.values
-  svm_scores_norm <- (svm_scores - min(svm_scores)) / (max(svm_scores) - min(svm_scores))
-  svm_scores_norm <- 1 - svm_scores_norm
+  # Fit du modèle
+  svm_model <- svm(X15, type = 'one-classification', nu = nu, kernel = "radial")
 
-  roc_svm <- roc(y, as.vector(svm_scores_norm))
+  # Extraction et normalisation des scores
+  svm_scores <- attributes(predict(svm_model, X15, decision.values = TRUE))$decision.values
+  svm_scores_norm <- 1 - (svm_scores - min(svm_scores)) / (max(svm_scores) - min(svm_scores))
 
-  plot(roc_svm,
-       main = paste("ROC - One-Class SVM nu =", nu,
-                    "\nAUC =", round(auc(roc_svm), 3)),
-       col = "steelblue",
-       lwd = 2)
+  # Calcul ROC
+  roc_obj <- roc(y, as.vector(svm_scores_norm), quiet = TRUE)
+  auc_val <- round(auc(roc_obj), 3)
 
-  abline(a = 0, b = 1, lty = 2, col = "grey")
+  # Tracé superposé
+  plot(roc_obj,
+       add = !first_svm,
+       col = couleurs_svm[i],
+       lwd = 2,
+       legacy.axes = TRUE,
+       main = "Comparaison ROC - One-Class SVM (sur X15)")
+
+  # Texte pour la légende
+  legende_svm[i] <- paste0("nu = ", nu, " (AUC = ", auc_val, ")")
+
+  first_svm <- FALSE
 }
 
-par(mfrow = c(1, 1))
+# 3. Finitions
+abline(a = 0, b = 1, lty = 2, col = "grey")
+
+legend("bottomright",
+       legend = legende_svm,
+       col = couleurs_svm,
+       lwd = 2,
+       cex = 0.8,
+       bty = "n")
 
 ```
 
