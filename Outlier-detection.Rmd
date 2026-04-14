@@ -94,7 +94,7 @@ cat(paste0(
 
 # Présentation du dataset
 
-```{r chargement-donnee, echo=FALSE, message=TRUE, warning=TRUE, results='hide'}
+```{r chargement-donnee, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 if(!require('pROC')) install.packages('pROC')
 if(!require("dbscan")) install.packages("dbscan")
 if(!require('isotree')) install.packages('isotree')
@@ -249,8 +249,9 @@ legend("bottomright",
 ```
 Les courbes ROC vertes, bleu et violet sont optimales à differents niveaux. La courbe rouge n'est optimale nulle part. Les trois courbes optimales ont un AUC supérieur à 0.7. En arrondissant au centième près, la meilleure courbe reste minPts = 20 avec un AUC=0.80, ce qui veut dire que si un outlier est bien classé comme tel, alors dans 80% des cas cette classification est correcte. Ce model LOF avec 20 voisins est très bon pour classifier les outliers.
 
-- snesibilité
-- spécificité
+Courbe rouge
+- snesibilité haute -> beaucoup plus de faux positif que les autres courbes
+- spécificité basse
 
 ## Isolation Forest
 
@@ -354,8 +355,8 @@ legend("bottomright",
 ```
 
 Même si les modèles à 100, 500, 1000 sont plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données, seules 60% des classifications sont correctement classifiées.
-- sensibilité
-- spécificité
+- sensibilité Haute -> beaucoup de faut positifs
+- spécificité basse
 
 ## One-Class SVM
 
@@ -455,23 +456,26 @@ legend("bottomright",
        bty = "n")
 
 ```
+
 Même si les modèles à nu=0.1 et nu=0.25 sont les plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données seules, respectivement 60% et 63% des classifications sont correctement classifiées.
-- sensibilité
-- spécificité
+- sensibilité haut --> beaucoup de faux pour toute les courbe même si en baisse pour la courbe jaune.
+- spécificité basse
+
 
 # Comparaison avec One-Class SVM
 
 *OC-SVM VS Isolation Forest*
 Les performance du One-Class SVM et Isolation forest sont assez semblables.
 - AUC proche environ 0.6
-- sensibilité
-- spécificité
+- sensibilité --> haut: pour les deux model beaucoup de faux positifs
+- spécificité --> basse
 
 *OC-SVM VS LOF*
 Les performance de LOF sont nettement supérieures au One-Classe SVM.
 - AUC OC-SVM (0.6) < LOF (0.8)
-- sensibilité
-- spécificité
+à revoir ça :
+- sensibilité -->  peux de faux positif
+- spécificité -->
 
 # Conclusion
 
