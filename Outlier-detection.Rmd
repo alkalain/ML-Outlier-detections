@@ -140,14 +140,14 @@ plot(pcaOutliers$x[,1:15])
 
 ```
 
-Pour avoir au moins 80% de la variance expliqué, il faut prendre les septs premierses composantes principales. Cela résulte à `r round(varCumSum[15],2)`% de variance.
+Pour avoir au moins 80% de la variance expliquée, il faut prendre les sept premières composantes principales. Cela résulte à `r round(varCumSum[15],2)`% de variance.
 
 # Détections d'anomalies
 
 
 ## Local Outlier Factor
 
-Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observations, calcule la densité, et la compare à celles des autres points.
+Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observation, calcule la densité, et la compare à celle des autres points.
 
 ```{r LOF, echo=FALSE, results='asis'}
 X15 <- pcaOutliers$x[, 1:15]  # LOF calculé sur 15 dimensions
@@ -199,7 +199,7 @@ for(k in ks) {
 }
 ```
 
-La visualisation est basée sur les deux premières composantes principales PC1 et PC2, et les scores LOF ont été calculés sur un espace à 15 dimensions. Sur le premier graphique, il y a des points situés au coeur du nuage identifiés comme des outliers, et des points isolés autours sont classés comme standart (en noir). Cela veut dire qu'un point peut sembler normale sur PC1 et PC2, mais présenter un caractère atypique dans le reste des dimensions.
+La visualisation est basée sur les deux premières composantes principales PC1 et PC2, et les scores LOF ont été calculés sur un espace à 15 dimensions. Sur le premier graphique, il y a des points situés au coeur du nuage identifiés comme des outliers, et des points isolés autours sont classés comme standard (en noir). Cela veut dire qu'un point peut sembler normal sur PC1 et PC2, mais présenter un caractère atypique dans le reste des dimensions.
 
 ### Courbe ROC
 
@@ -244,17 +244,17 @@ legend("bottomright",
        col = couleurs,
        lwd = 2,
        cex = 0.8,
-       bty = "n") # "n" pour enlever le cadre de la légende
+       bty = "n")
 
 ```
-Les courbes ROC vertes, bleu et violet sont optimaux à differents niveaux. La courbe rouge n'est optimale nullpart. Les trois courbes optimaux ont un AUC supérieur à 0.7. En arrondissant au centième près la meilleur courbe reste minPts = 20 avec un AUC=0.80, ce qui veut dire que si un outiler est bien classé comme tel, alors il y 80% des cas cette classification est correcte. Ce le model LOF avec 20 voisins est très bon pour classifer les outliers.
+Les courbes ROC vertes, bleu et violet sont optimales à differents niveaux. La courbe rouge n'est optimale nulle part. Les trois courbes optimales ont un AUC supérieur à 0.7. En arrondissant au centième près, la meilleure courbe reste minPts = 20 avec un AUC=0.80, ce qui veut dire que si un outlier est bien classé comme tel, alors dans 80% des cas cette classification est correcte. Ce model LOF avec 20 voisins est très bon pour classifier les outliers.
 
 - snesibilité
 - spécificité
 
 ## Isolation Forest
 
-La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpage des données jusqu'à trouver des points les plus éloignés, de la racine de l'arbre, qui sont les outliers.
+La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpages des données jusqu'à trouver les points les plus éloignés de la racine de l'arbre, qui sont les outliers.
 
 ```{r Iso-Forest, echo=FALSE, results='asis'}
 # vecteur d'hyperparamètre les k arbres
@@ -353,8 +353,8 @@ legend("bottomright",
        bty = "n")
 ```
 
-Même si les les models à 100, 500, 1000 sont plus optimaux leurs AUC reste iférieur à 0.7. Cela veux dire que les modèle ne sont pas satisfaisant pour ces données seule 60% des classifications sont correctement classifés.
-- snesibilité
+Même si les modèles à 100, 500, 1000 sont plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données, seules 60% des classifications sont correctement classifiées.
+- sensibilité
 - spécificité
 
 ## One-Class SVM
@@ -455,27 +455,27 @@ legend("bottomright",
        bty = "n")
 
 ```
-Même si les models à nu=0.1 et nu=0.25 sont les plus optimaux leurs AUC reste iférieur à 0.7. Cela veux dire que les modèle ne sont pas satisfaisant pour ces données seule respéctivement 60% et 63% des classifications sont correctement classifés.
-- snesibilité
+Même si les modèles à nu=0.1 et nu=0.25 sont les plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données seules, respectivement 60% et 63% des classifications sont correctement classifiées.
+- sensibilité
 - spécificité
 
 # Comparaison avec One-Class SVM
 
 *OC-SVM VS Isolation Forest*
-Les performance du One-Class SVM et Isolation forest sont assez semblable.
+Les performance du One-Class SVM et Isolation forest sont assez semblables.
 - AUC proche environ 0.6
 - snesibilité
 - spécificité
 
 *OC-SVM VS LOF*
-Les performance de LOF sont nettement supérieur au One-Classe SVM.
+Les performance de LOF sont nettement supérieures au One-Classe SVM.
 - AUC OC-SVM (0.6) < LOF (0.8)
 - snesibilité
 - spécificité
 
 # Conclusion
 
-En conclusion, même si les trois methode de sont variées et proposent un resultat qui peut sembler viable au regard des historames de distribution, les courbe ROC permette de bien départager ces modles parmis leurs variante de configuration d'hyperparamètre et entre models.
+En conclusion, même si les trois méthodes sont variées et proposent un résultat qui peut sembler viable au regard des histogrammes de distribution, les courbes ROC permettent de bien départager ces modèles parmis leurs variantes de configuration d'hyperparamètres et entre modèles.
 
 
 # Annexe : avec tout le code
