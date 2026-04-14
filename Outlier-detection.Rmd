@@ -464,13 +464,13 @@ Même si les modèles à nu=0.1 et nu=0.25 sont les plus optimaux, leurs AUC res
 *OC-SVM VS Isolation Forest*
 Les performance du One-Class SVM et Isolation forest sont assez semblables.
 - AUC proche environ 0.6
-- snesibilité
+- sensibilité
 - spécificité
 
 *OC-SVM VS LOF*
 Les performance de LOF sont nettement supérieures au One-Classe SVM.
 - AUC OC-SVM (0.6) < LOF (0.8)
-- snesibilité
+- sensibilité
 - spécificité
 
 # Conclusion
