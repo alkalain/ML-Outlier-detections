@@ -86,7 +86,7 @@ cat(paste0(
 \setcounter{page}{1}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\theAuthorA{} \& \theAuthorB \& \theAuthorC}
+\fancyhead[L]{\theAuthorA{} \& \theAuthorB{} \& \theAuthorC}
 \fancyhead[R]{\theDate}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -99,10 +99,21 @@ if(!require('pROC')) install.packages('pROC')
 if(!require("dbscan")) install.packages("dbscan")
 if(!require('isotree')) install.packages('isotree')
 if(!require('e1071')) install.packages('e1071')
+if(!require('knitr')) install.packages('knitr')
 library(pROC)
 library(dbscan)
 library(isotree)
 library(e1071)
+
+# setup des graphiques
+library(knitr)
+opts_chunk$set(
+  fig.width = 7,
+  fig.height = 5,
+  fig.align = "center",
+  out.width = "80%"
+)
+
 load("./outlier-dataset.Rdata")
 
 ```
@@ -113,11 +124,17 @@ Le jeu de données outlier-dataset.Rdata mettra en jeu n = 6916 observations viv
 
 ## ACP
 
-```{r acp, echo=FALSE, results='asis'}
+```{r acp-1, fig.cap="Représentation des données selon PC1 et PC2", echo=FALSE, results='asis'}
 pcaOutliers <- prcomp(X,scale. = TRUE)
 
 varCumSum <- cumsum(pcaOutliers$sdev^2/sum(pcaOutliers$sdev^2)*100)
 
+plot(pcaOutliers$x[,1:15])
+
+```
+
+```{r acp-2, fig.cap="Résultats de l'ACP", echo=FALSE, results='asis'}
+par(mfrow = c(1, 2))
 barplot(pcaOutliers$sdev^2/sum(pcaOutliers$sdev^2)*100,
         main = "ACP X",
         xlab = "Composantes",
@@ -135,8 +152,8 @@ barplot(varCumSum,
         col = ifelse(varCumSum > 85, "red", "green3"),
         las = 2
         )
+par(mfrow = c(1, 1))
 
-plot(pcaOutliers$x[,1:15])
 
 ```
 
@@ -149,25 +166,31 @@ Pour avoir au moins 80% de la variance expliquée, il faut prendre les sept prem
 
 Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observation, calcule la densité, et la compare à celle des autres points.
 
-```{r LOF, echo=FALSE, results='asis'}
+```{r LOF, fig.cap="LOF à k=20 voisins", echo=FALSE, results='asis'}
 X15 <- pcaOutliers$x[, 1:15]  # LOF calculé sur 15 dimensions
 X2 <- pcaOutliers$x[, 1:2]  # Visualisation sur PC1 vs PC2
 
 # vecteur d'hyperparamètre les k voisins
 ks <- c(3, 9, 15, 20)
 # seuils de catégorrisaition des outilers
-seuils <- c(2.5,3,4,5,6)
+seuils <- c(2.5,4,6)
 # pour l'affichage de l'histograme pour visualiser les seuils d'outliers
-colsSeuils <- c('red2', 'orange2', 'pink1', 'green2', 'cyan2')
+colsSeuils <- c('red2', 'green2', 'cyan2')
+
+# Stockage des scores LOF
+lof_scores_list <- list()
 
 for(k in ks) {
   lof_scores <- lof(X15, minPts = k)
+  lof_scores_list[[as.character(k)]] <- lof_scores
 
+}
+k <- 20
   par(mfrow = c(1, 2))
 
   # Plot PC1 vs PC2 avec couleurs LOF
   plot(X2, col = "grey", pch = 16,
-       main = paste("LOF (7 PC) - minPts =", k),
+       main = paste("LOF à ", k," voisins"),
        xlab = "PC1", ylab = "PC2")
 
   points(X2[lof_scores <= seuils[1], ], col = "black", pch = 16, cex = 0.5)
@@ -191,19 +214,20 @@ for(k in ks) {
 
   # Histogramme
   hist(lof_scores, breaks = 30,
-       main = paste("Distribution LOF - minPts =", k),
-       xlab = "Score LOF")
+       main = paste("Distribution à voisins =", k),
+       xlab = "Score LOF",
+       xlim=c(1,10),
+       )
   abline(v = seuils, col = colsSeuils, lty = 2)
 
   par(mfrow = c(1, 1))
-}
 ```
 
 La visualisation est basée sur les deux premières composantes principales PC1 et PC2, et les scores LOF ont été calculés sur un espace à 15 dimensions. Sur le premier graphique, il y a des points situés au coeur du nuage identifiés comme des outliers, et des points isolés autours sont classés comme standard (en noir). Cela veut dire qu'un point peut sembler normal sur PC1 et PC2, mais présenter un caractère atypique dans le reste des dimensions.
 
 ### Courbe ROC
 
-```{r ROC-LOF, echo=FALSE, results='asis'}
+```{r ROC-LOF, fig.cap="ROC des LOFs", echo=FALSE, results='asis'}
 couleurs <- rainbow(length(ks))
 
 first <- TRUE
@@ -213,8 +237,8 @@ legende_txt <- c()
 for(i in 1:length(ks)) {
   k <- ks[i]
   
-  # Calcul du LOF
-  lof_scores <- lof(X15, minPts = k)
+  # Récupération des score LOF
+  lof_scores <- lof_scores_list[[as.character(k)]]
   
   # Nettoyage des données
   idx_finite <- is.finite(lof_scores)
@@ -230,7 +254,7 @@ for(i in 1:length(ks)) {
        main = "Comparaison des courbes ROC - LOF")
 
   # Construction du texte de légende
-  legende_txt[i] <- paste0("minPts = ", k, " (AUC = ", auc_val, ")")
+  legende_txt[i] <- paste0("voisins = ", k, " (AUC = ", auc_val, ")")
   
   first <- FALSE
 }
@@ -257,23 +281,30 @@ Courbe rouge
 
 La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpages des données jusqu'à trouver les points les plus éloignés de la racine de l'arbre, qui sont les outliers.
 
-```{r Iso-Forest, echo=FALSE, results='asis'}
-# vecteur d'hyperparamètre les k arbres
-ks <- c(50, 100, 500, 1000)
+```{r Iso-Forest, fig.cap="Résultats d'isolation forest à n=500 arbres", echo=FALSE, results='asis'}
+# vecteur d'hyperparamètre les n arbres
+ns <- c(50, 100, 500, 1000)
 # seuils de catégorrisaition des outilers
 seuils_iso <- c(0.5, 0.55, 0.6)
 # pour l'affichage de l'histograme pour visualiser les seuils d'outliers
 colsSeuils <- c('red2', 'orange2', 'cyan2')
 
-for(k in ks) {
-  iso_model <- isolation.forest(X15, ntrees = k)
-  iso_scores <- predict(iso_model, X15)
+# Stockage des scores iso
+iso_scores_list <- list()
 
+
+for(n in ns) {
+  iso_model <- isolation.forest(X15, ntrees = n)
+  iso_scores <- predict(iso_model, X15)
+  iso_scores_list[[as.character(n)]] <- iso_scores
+
+}
+n = 500
   par(mfrow = c(1, 2))
 
   # Nuage de points sur PC1 vs PC2
   plot(X2, col = "grey", pch = 16,
-       main = paste("Isolation Forest ntrees =", k),
+       main = paste("Isolation Forest ntrees =", n),
        xlab = "PC1", ylab = "PC2")
 
   points(X2[iso_scores <= seuils_iso[1], ], col = "black", pch = 16, cex = 0.5)
@@ -295,7 +326,7 @@ for(k in ks) {
 
   # Histogramme
   hist(iso_scores, breaks = 30,
-       main = paste("Distribution Isolation Forest ntrees =", k),
+       main = paste("Distribution des scores"),
        xlab = "Score anomalie",
        col = "lightgrey")
   abline(v = seuils_iso, col = colsSeuils, lty = 2, lwd = 2)
@@ -305,25 +336,23 @@ for(k in ks) {
          lty = 2, cex = 0.7)
 
   par(mfrow = c(1, 1))
-}
 
 ```
 
 ### Courbe ROC
 
-```{r ROC-Isolation-Forest, echo=FALSE, results='asis'}
+```{r ROC-Isolation-Forest, fig.cap="ROC des Isolations Forest", echo=FALSE, results='asis'}
 # 1. Préparation des couleurs et variables
 couleurs_iso <- c("darkorange", "purple", "forestgreen", "red") # Couleurs distinctes
 legende_iso <- c()
 first_iso <- TRUE
 
 # 2. Boucle de génération
-for(i in 1:length(ks)) {
-  k <- ks[i]
+for(i in 1:length(ns)) {
+  n <- ns[i]
 
-  # Entraînement et prédiction
-  iso_model <- isolation.forest(X15, ntrees = k)
-  iso_scores <- predict(iso_model, X15)
+  # récupération des scores
+  iso_scores <- iso_scores_list[[as.character(n)]]
 
   # Calcul ROC
   roc_obj <- roc(y, iso_scores, quiet = TRUE)
@@ -338,7 +367,7 @@ for(i in 1:length(ks)) {
        main = "Comparaison ROC - Isolation Forest (sur X15)")
 
   # Stockage pour la légende
-  legende_iso[i] <- paste0("ntrees = ", k, " (AUC = ", auc_val, ")")
+  legende_iso[i] <- paste0("ntrees = ", n, " (AUC = ", auc_val, ")")
 
   first_iso <- FALSE
 }
@@ -360,9 +389,12 @@ Même si les modèles à 100, 500, 1000 sont plus optimaux, leurs AUC reste inf�
 
 ## One-Class SVM
 
-```{r OC-SVM, echo=FALSE, results='asis'}
+```{r OC-SVM, fig.cap="Résultats de One-Class SVM pour nu=0.1", echo=FALSE, results='asis'}
 # vecteur d'hyperparamètre les nu
 nus <- c(0.01, 0.05, 0.1, 0.25)
+
+# Stockage des scores iso
+svm_scores_norm_list <- list()
 
 for(nu in nus) {
 
@@ -379,6 +411,10 @@ for(nu in nus) {
   svm_scores_norm <- (svm_scores - min(svm_scores)) / (max(svm_scores) - min(svm_scores))
   svm_scores_norm <- 1 - svm_scores_norm
 
+  svm_scores_norm_list[[as.character(nu)]] <- svm_scores_norm
+
+}
+nu <- 0.1
   par(mfrow = c(1, 2))
 
   # Nuage de points sur PC1 vs PC2
@@ -393,8 +429,8 @@ for(nu in nus) {
 
   # Histogramme des scores
   hist(svm_scores_norm, breaks = 30,
-       main = paste("Distribution scores SVM nu =", nu),
-       xlab = "Score anomalie (normalisé)",
+       main = paste("Distribution SVM nu =", nu),
+       xlab = "Score anomalie",
        col = "lightgrey")
   abline(v = median(svm_scores_norm[!y_pred]),
          col = "red", lty = 2, lwd = 2)
@@ -404,13 +440,12 @@ for(nu in nus) {
          lty = 2, cex = 0.7)
 
   par(mfrow = c(1, 1))
-}
 
 ```
 
 ### Courbe ROC
 
-```{r OC-SVM-ROC, echo=FALSE, results='asis'}
+```{r OC-SVM-ROC, fig.cap="ROC des One-Class SVM", echo=FALSE, results='asis'}
 # 1. Préparation
 couleurs_svm <- c("firebrick", "dodgerblue3", "darkorchid4", "goldenrod3")
 legende_svm <- c()
@@ -420,12 +455,7 @@ first_svm <- TRUE
 for(i in 1:length(nus)) {
   nu <- nus[i]
 
-  # Fit du modèle
-  svm_model <- svm(X15, type = 'one-classification', nu = nu, kernel = "radial")
-
-  # Extraction et normalisation des scores
-  svm_scores <- attributes(predict(svm_model, X15, decision.values = TRUE))$decision.values
-  svm_scores_norm <- 1 - (svm_scores - min(svm_scores)) / (max(svm_scores) - min(svm_scores))
+  svm_scores_norm <- svm_scores_norm_list[[as.character(nu)]]
 
   # Calcul ROC
   roc_obj <- roc(y, as.vector(svm_scores_norm), quiet = TRUE)
@@ -482,4 +512,145 @@ Les performance de LOF sont nettement supérieures au One-Classe SVM.
 En conclusion, même si les trois méthodes sont variées et proposent un résultat qui peut sembler viable au regard des histogrammes de distribution, les courbes ROC permettent de bien départager ces modèles parmis leurs variantes de configuration d'hyperparamètres et entre modèles.
 
 
-# Annexe : avec tout le code
+# Annexe :
+
+## Figures
+
+### LOF
+
+```{r annex-LOF,fig.cap="Résultats des différentes configurations d'hyperparamètre de LOF", echo=FALSE, results='asis'}
+
+for(k in ks) {
+  # Récupération des score LOF
+  lof_scores <- lof_scores_list[[as.character(k)]]
+
+  par(mfrow = c(1, 2))
+
+  # Plot PC1 vs PC2 avec couleurs LOF
+  plot(X2, col = "grey", pch = 16,
+       main = paste("LOF à ", k," voisins"),
+       xlab = "PC1", ylab = "PC2")
+
+  points(X2[lof_scores <= seuils[1], ], col = "black", pch = 16, cex = 0.5)
+
+  # Outliers colorés par niveau de seuil
+  for(i in 1:length(seuils)) {
+    if(i < length(seuils)) {
+      outliers <- lof_scores > seuils[i] & lof_scores <= seuils[i+1]
+    } else {
+      outliers <- lof_scores > seuils[i]
+    }
+    points(X2[outliers, ], col = colsSeuils[i], pch = 16, cex = 1)
+  }
+
+  legend("topleft",
+         legend = paste("Seuil >", seuils),
+         col = colsSeuils,
+         pch = 16,
+         cex = 0.7,
+         title = "Niveaux de seuil")
+
+  # Histogramme
+  hist(lof_scores, breaks = 30,
+       main = paste("Distribution des voisins"),
+       xlab = "Score LOF",
+       xlim = c(1,10)
+       )
+  abline(v = seuils, col = colsSeuils, lty = 2)
+
+  par(mfrow = c(1, 1))
+}
+```
+
+\newpage
+
+### Isolation forest
+
+```{r annex-isof,fig.cap="Résultats des différentes configurations d'hyperparamètre d'isolation forest", echo=FALSE, results='asis'}
+
+for(n in ns) {
+  iso_scores <- iso_scores_list[[as.character(n)]]
+
+  par(mfrow = c(1, 2))
+
+  # Nuage de points sur PC1 vs PC2
+  plot(X2, col = "grey", pch = 16,
+       main = paste("Isolation Forest ntrees =", n),
+       xlab = "PC1", ylab = "PC2")
+
+  points(X2[iso_scores <= seuils_iso[1], ], col = "black", pch = 16, cex = 0.5)
+
+  for(i in 1:length(seuils_iso)) {
+    if(i < length(seuils_iso)) {
+      outliers <- iso_scores > seuils_iso[i] & iso_scores <= seuils_iso[i+1]
+    } else {
+      outliers <- iso_scores > seuils_iso[i]
+    }
+    points(X2[outliers, ], col = colsSeuils[i], pch = 16, cex = 1)
+  }
+
+  legend("topleft",
+         legend = c("Normal", paste("Seuil >", seuils_iso)),
+         col = c("black", colsSeuils),
+         pch = 16, cex = 0.7,
+         title = "Niveaux de seuil")
+
+  # Histogramme
+  hist(iso_scores, breaks = 30,
+       main = paste("Distribution des scores"),
+       xlab = "Score anomalie",
+       col = "lightgrey")
+  abline(v = seuils_iso, col = colsSeuils, lty = 2, lwd = 2)
+  legend("topright",
+         legend = paste("Seuil", seuils_iso),
+         col = colsSeuils,
+         lty = 2, cex = 0.7)
+
+  par(mfrow = c(1, 1))
+}
+
+
+```
+
+\newpage
+
+### One-Class SVM
+
+```{r annex-SVM, fig.cap="Résultats des différentes configurations d'hyperparamètre de One-Class SVM", echo=FALSE, results='asis' }
+
+for(nu in nus) {
+
+ svm_scores_norm <- svm_scores_norm_list[[as.character(nu)]]
+
+  par(mfrow = c(1, 2))
+
+  # Nuage de points sur PC1 vs PC2
+  plot(X2, col = ifelse(y_pred, "grey", "red2"), pch = 16, cex = 0.7,
+       main = paste("One-Class SVM nu =", nu),
+       xlab = "PC1", ylab = "PC2")
+
+  legend("topleft",
+         legend = c("Normal", "Outlier"),
+         col = c("grey", "red2"),
+         pch = 16, cex = 0.7)
+
+  # Histogramme des scores
+  hist(svm_scores_norm, breaks = 30,
+       main = paste("Distribution nu =", nu),
+       xlab = "Score anomalie",
+       col = "lightgrey")
+  abline(v = median(svm_scores_norm[!y_pred]),
+         col = "red", lty = 2, lwd = 2)
+  legend("topright",
+         legend = "Seuil outliers",
+         col = "red",
+         lty = 2, cex = 0.7)
+
+  par(mfrow = c(1, 1))
+}
+
+```
+
+\newpage
+
+## code
