@@ -124,7 +124,7 @@ Le jeu de données outlier-dataset.Rdata mettra en jeu n = 6916 observations viv
 
 ## ACP
 
-```{r acp-1, fig.cap="Représentation des données selon PC1 et PC2", echo=FALSE, results='asis'}
+```{r acp-1, fig.cap="Représentation des données selon PC1 et PC2", echo=FALSE, results='asis', fig.pos = 'H'}
 pcaOutliers <- prcomp(X,scale. = TRUE)
 
 varCumSum <- cumsum(pcaOutliers$sdev^2/sum(pcaOutliers$sdev^2)*100)
@@ -133,7 +133,7 @@ plot(pcaOutliers$x[,1:15])
 
 ```
 
-```{r acp-2, fig.cap="Résultats de l'ACP", echo=FALSE, results='asis'}
+```{r acp-2, fig.cap="Résultats de l'ACP", echo=FALSE, results='asis', fig.pos = 'H'}
 par(mfrow = c(1, 2))
 barplot(pcaOutliers$sdev^2/sum(pcaOutliers$sdev^2)*100,
         main = "ACP X",
@@ -166,7 +166,7 @@ Pour avoir au moins 80% de la variance expliquée, il faut prendre les sept prem
 
 Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observations, calcule la densité, et la compare à celles des autres points. L'hyperparamètre k qui contrôle la taille du voisinage, définit une échelle où l'algorithme va se fier pour déterminer un rapport entre un point et ses entourages. Plus k augmente, plus la sensibilité au bruit diminue. Cependant, il faut être prudent à ne pas avoir un k trop grand pour ne pas rater des anomalies importantes. 
 
-```{r LOF, fig.cap="LOF à k=20 voisins", echo=FALSE, results='asis'}
+```{r LOF, fig.cap="LOF à k=20 voisins", echo=FALSE, results='asis', fig.pos = 'H'}
 X15 <- pcaOutliers$x[, 1:15]  # LOF calculé sur 15 dimensions
 X2 <- pcaOutliers$x[, 1:2]  # Visualisation sur PC1 vs PC2
 
@@ -227,7 +227,7 @@ La visualisation est basée sur les deux premières composantes principales PC1 
 
 ### Courbe ROC
 
-```{r ROC-LOF, fig.cap="ROC des LOFs", echo=FALSE, results='asis'}
+```{r ROC-LOF, fig.cap="ROC des LOFs", echo=FALSE, results='asis',fig.pos = 'H'}
 couleurs <- rainbow(length(ks))
 
 first <- TRUE
@@ -281,7 +281,7 @@ Courbe rouge
 
 La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpage des données jusqu'à trouver des points les plus éloignés qui sont les outliers. L'hyperparamètre du nombre d'arbre permet de rendre le modèle plus stable et précis : vu que cette méthode repose sur des tirages aléatoires, avoir plusieurs arbres permet de moyenner les scores. 
 
-```{r Iso-Forest, fig.cap="Résultats d'isolation forest à n=500 arbres", echo=FALSE, results='asis'}
+```{r Iso-Forest, fig.cap="Résultats d'isolation forest à n=500 arbres", echo=FALSE, results='asis', fig.pos = 'H'}
 # vecteur d'hyperparamètre les n arbres
 ns <- c(50, 100, 500, 1000)
 # seuils de catégorrisaition des outilers
@@ -341,7 +341,7 @@ n = 500
 
 ### Courbe ROC
 
-```{r ROC-Isolation-Forest, fig.cap="ROC des Isolations Forest", echo=FALSE, results='asis'}
+```{r ROC-Isolation-Forest, fig.cap="ROC des Isolations Forest", echo=FALSE, results='asis', fig.pos = 'H'}
 # 1. Préparation des couleurs et variables
 couleurs_iso <- c("darkorange", "purple", "forestgreen", "red") # Couleurs distinctes
 legende_iso <- c()
@@ -389,7 +389,7 @@ Même si les modèles à 100, 500, 1000 sont plus optimaux, leurs AUC reste inf�
 
 ## One-Class SVM
 
-```{r OC-SVM, fig.cap="Résultats de One-Class SVM pour nu=0.1", echo=FALSE, results='asis'}
+```{r OC-SVM, fig.cap="Résultats de One-Class SVM pour nu=0.1", echo=FALSE, results='asis', fig.pos = 'H'}
 # vecteur d'hyperparamètre les nu
 nus <- c(0.01, 0.05, 0.1, 0.25)
 
@@ -445,7 +445,7 @@ nu <- 0.1
 
 ### Courbe ROC
 
-```{r OC-SVM-ROC, fig.cap="ROC des One-Class SVM", echo=FALSE, results='asis'}
+```{r OC-SVM-ROC, fig.cap="ROC des One-Class SVM", echo=FALSE, results='asis', fig.pos = 'H'}
 # 1. Préparation
 couleurs_svm <- c("firebrick", "dodgerblue3", "darkorchid4", "goldenrod3")
 legende_svm <- c()
