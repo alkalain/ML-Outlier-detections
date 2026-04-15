@@ -164,7 +164,7 @@ Pour avoir au moins 80% de la variance expliquée, il faut prendre les sept prem
 
 ## Local Outlier Factor
 
-Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observations, calcule la densité, et la compare à celles des autres points. L'hyperparamètre k qui contrôle la taille du voisinage, définit une échelle où l'algorithme va se fier pour déterminer un rapport entre un point et ses entourages. Plus k augmente, plus la sensibilité au bruit diminue. Cependant, il faut être prudent à ne pas avoir un k trop grand pour ne pas rater des anomalies importantes. 
+Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observations, calcule la densité, et la compare à celles des autres points. L'hyperparamètre k qui contrôle la taille du voisinage, définit une échelle où l'algorithme va se fier pour déterminer un rapport entre un point et ses entourages. Plus k augmente, plus la sensibilité au bruit diminue. Cependant, il faut être prudent à ne pas avoir un k trop grand pour ne pas rater des anomalies importantes.
 
 ```{r LOF, fig.cap="LOF à k=20 voisins", echo=FALSE, results='asis', fig.pos = 'H'}
 X15 <- pcaOutliers$x[, 1:15]  # LOF calculé sur 15 dimensions
@@ -271,15 +271,15 @@ legend("bottomright",
        bty = "n")
 
 ```
-Les courbes ROC vertes, bleu et violet sont optimales à differents niveaux. La courbe rouge n'est optimale nulle part. Les trois courbes optimales ont un AUC supérieur à 0.7. En arrondissant au centième près, la meilleure courbe reste minPts = 20 avec un AUC=0.80, ce qui veut dire que si un outlier est bien classé comme tel, alors dans 80% des cas cette classification est correcte. Ce model LOF avec 20 voisins est très bon pour classifier les outliers.
+Les courbes ROC vertes, bleu et violet sont optimales à differents niveaux. La courbe rouge n'est optimale nulle part. Les trois courbes optimales ont un AUC supérieur à 0.7. En arrondissant au centième près, la meilleure courbe reste voisins = 20 avec un AUC=0.80, ce qui veut dire que si un outlier est bien classé comme tel, alors dans 80% des cas cette classification est correcte. Ce model LOF avec 20 voisins est très bon pour classifier les outliers.
 
-Courbe rouge
-- snesibilité haute -> beaucoup plus de faux positif que les autres courbes
-- spécificité basse
+Pour rappel la sensibilité est le taux de vrai positif donc le nombre de bonne prédiction des résultats positifs. La specificity est le taux de vrai négatif donc le nmbre de bonne prédiction des résultats négatif.
+
+En revanche la courbe rouge, avec voisin = 3, représente un modèle avec une aire sous la courbe de 0,7. Il faut noter que cette courbe montre une sensibilité plus basse que les autres courbe et une specificité plus haute que les autre courbe. Cela signifique, que ce model a plus de faux positifs que les autres courbes.
 
 ## Isolation Forest
 
-La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpage des données jusqu'à trouver des points les plus éloignés qui sont les outliers. L'hyperparamètre du nombre d'arbre permet de rendre le modèle plus stable et précis : vu que cette méthode repose sur des tirages aléatoires, avoir plusieurs arbres permet de moyenner les scores. 
+La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpage des données jusqu'à trouver des points les plus éloignés qui sont les outliers. L'hyperparamètre du nombre d'arbre permet de rendre le modèle plus stable et précis : vu que cette méthode repose sur des tirages aléatoires, avoir plusieurs arbres permet de moyenner les scores.
 
 ```{r Iso-Forest, fig.cap="Résultats d'isolation forest à n=500 arbres", echo=FALSE, results='asis', fig.pos = 'H'}
 # vecteur d'hyperparamètre les n arbres
@@ -383,9 +383,7 @@ legend("bottomright",
        bty = "n")
 ```
 
-Même si les modèles à 100, 500, 1000 sont plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données, seules 60% des classifications sont correctement classifiées.
-- sensibilité Haute -> beaucoup de faut positifs
-- spécificité basse
+Même si les modèles à 100, 500, 1000 sont plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données, seules 60% des classifications sont correctement classifiées. Avec une haute spécificité et une basse sensibilité pour toutes les courbes tous les models présente beaucoup de faux positifs.
 
 ## One-Class SVM
 
@@ -487,29 +485,20 @@ legend("bottomright",
 
 ```
 
-Même si les modèles à nu=0.1 et nu=0.25 sont les plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données seules, respectivement 60% et 63% des classifications sont correctement classifiées.
-- sensibilité haut --> beaucoup de faux pour toute les courbe même si en baisse pour la courbe jaune.
-- spécificité basse
+Même si les modèles à nu=0.1 et nu=0.25 sont les plus optimaux, leurs AUC reste inférieurs à 0.7. Cela veut dire que les modèles ne sont pas satisfaisants pour ces données seules, respectivement 60% et 63% des classifications sont correctement classifiées. Malgrès la performence de la courbe jaune étant mmeilleurs que les autres courbes tous les models présentent cependant beaucoups faut positif. Cela ce pérçois par la haute spécificité et la basse sensibilité des modèles.
 
 
 # Comparaison avec One-Class SVM
 
 *OC-SVM VS Isolation Forest*
-Les performance du One-Class SVM et Isolation forest sont assez semblables.
-- AUC proche environ 0.6
-- sensibilité --> haut: pour les deux model beaucoup de faux positifs
-- spécificité --> basse
+Les performance du One-Class SVM et Isolation forest sont assez semblables. Les deux modèls avec leurs variantes des différents hyper-paramètres, ont tous une aire sous la courbe d'environ 0.6 du moins s'en rapporchemant fortemant mais tout de même restant en dessous de 0.7. Tous ces modèle présente une basse sensibilité et une haute spécifisité indiquant un haut taux de faux positifs.
 
 *OC-SVM VS LOF*
-Les performance de LOF sont nettement supérieures au One-Classe SVM.
-- AUC OC-SVM (0.6) < LOF (0.8)
-à revoir ça :
-- sensibilité -->  peux de faux positif
-- spécificité -->
+Les performance de LOF sont nettement supérieures au One-Classe SVM. Avec l'air sou la courbe de 0.6 pour le One-Class SVM et 0.8 pour LOF, LOF présente la meilleurs performance parmis tout les models (en prenant les modèls avec les hyper-paramètres optimaux). Contrairement à OC-SVM, LOF a moins de faux positif avec une haute sensibilité et une basse spécificité.
 
 # Conclusion
 
-En conclusion, même si les trois méthodes sont variées et proposent un résultat qui peut sembler viable au regard des histogrammes de distribution, les courbes ROC permettent de bien départager ces modèles parmis leurs variantes de configuration d'hyperparamètres et entre modèles.
+En conclusion, même si les trois méthodes sont variées et proposent un résultat qui peut sembler viable au regard des histogrammes de distribution, les courbes ROC permettent de bien départager ces modèles parmis leurs variantes de configuration d'hyperparamètres et entre modèles. Ainsi le model LOF avec 20 voisins, présente la meilleur capacité de détéction d'outlier avec une prédiction 80% du temps.
 
 
 # Annexe :
