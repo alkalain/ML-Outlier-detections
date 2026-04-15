@@ -164,7 +164,7 @@ Pour avoir au moins 80% de la variance expliquée, il faut prendre les sept prem
 
 ## Local Outlier Factor
 
-Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observation, calcule la densité, et la compare à celle des autres points.
+Le Local Outlier Factor (LOF) est un algorithme d'apprentissage non supervisé qui compare la densité locale des observations. S'il existe une différence entre le point observé et ses voisins, le point est considéré comme anomalie. Il calcule un score pour chaque observations, calcule la densité, et la compare à celles des autres points. L'hyperparamètre k qui contrôle la taille du voisinage, définit une échelle où l'algorithme va se fier pour déterminer un rapport entre un point et ses entourages. Plus k augmente, plus la sensibilité au bruit diminue. Cependant, il faut être prudent à ne pas avoir un k trop grand pour ne pas rater des anomalies importantes. 
 
 ```{r LOF, fig.cap="LOF à k=20 voisins", echo=FALSE, results='asis'}
 X15 <- pcaOutliers$x[, 1:15]  # LOF calculé sur 15 dimensions
@@ -279,7 +279,7 @@ Courbe rouge
 
 ## Isolation Forest
 
-La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpages des données jusqu'à trouver les points les plus éloignés de la racine de l'arbre, qui sont les outliers.
+La méthode Isolation Forest cherche à isoler les anomalies, en utilisant des arbres de décision aléatoires. Elle effectue de manière itérative des découpage des données jusqu'à trouver des points les plus éloignés qui sont les outliers. L'hyperparamètre du nombre d'arbre permet de rendre le modèle plus stable et précis : vu que cette méthode repose sur des tirages aléatoires, avoir plusieurs arbres permet de moyenner les scores. 
 
 ```{r Iso-Forest, fig.cap="Résultats d'isolation forest à n=500 arbres", echo=FALSE, results='asis'}
 # vecteur d'hyperparamètre les n arbres
