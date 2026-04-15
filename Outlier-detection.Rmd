@@ -24,7 +24,7 @@ header-includes:
   - \usepackage{graphicx}
   - \usepackage{amsmath}
   - \usepackage{geometry}
-  - \geometry{margin=2.5cm}
+  - \geometry{margin=3cm}
   - \setcounter{secnumdepth}{3}
 
   # fonts
@@ -111,7 +111,7 @@ opts_chunk$set(
   fig.width = 7,
   fig.height = 5,
   fig.align = "center",
-  out.width = "80%"
+  out.width = "68%"
 )
 
 load("./outlier-dataset.Rdata")
