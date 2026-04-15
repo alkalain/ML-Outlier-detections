@@ -645,3 +645,6 @@ for(nu in nus) {
 \newpage
 
 ## code
+
+```{r code, fig.cap="Code du projet",ref.label=knitr::all_labels(), echo =TRUE, results='hide', eval=FALSE}
+```
